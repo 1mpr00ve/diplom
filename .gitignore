@@ -1,3 +1,17 @@
-PLAN.md
 Задание Туркин С.А. четверть-финал.docx
 .env.example
+
+# секреты
+.env
+
+# Go binary
+backend/main
+backend/*.exe
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
