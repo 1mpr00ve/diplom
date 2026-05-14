@@ -43,15 +43,17 @@
 - [ ] `GET /api/orders/:id` — детали заказа
 - [ ] `GET /api/me/orders` — история заказов пользователя
 
-### Шаг 7 — Frontend: основа
-- [ ] Create React App / Vite + TypeScript
-- [ ] React Router — роутинг страниц
-- [ ] Redux store — корзина, авторизация
-- [ ] Axios — http-клиент
+### Шаг 7 — Frontend: основа ✅
+- [x] Vite + React + TypeScript — `frontend/`
+- [x] React Router — роутинг (`/`, `/events/:id`, `/login`, `/checkout`)
+- [x] Redux store — `authSlice` (токен, юзер), `cartSlice` (корзина мест)
+- [x] Axios-клиент с JWT-интерцептором — `src/api/index.ts`
+- [x] TypeScript-типы — `src/types/index.ts`
+- [x] Vite настроен на порт 3000, совместим с Docker
 
 ### Шаг 8 — Frontend: страницы
-- [ ] Главная — список мероприятий
-- [ ] Страница события — описание
+- [ ] Главная — список мероприятий из API
+- [ ] Страница события — описание + схема зала
 - [ ] Страница авторизации — вход / регистрация
 - [ ] Личный кабинет — история заказов
 
@@ -74,4 +76,4 @@
 ---
 
 ## Текущий шаг
-**Шаг 7** — Frontend: основа
+**Шаг 8** — Frontend: страницы

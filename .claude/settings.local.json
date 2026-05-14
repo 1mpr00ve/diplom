@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(python -c ' *)",
-      "Bash(pdftotext \"ПЗ.pdf\" -)"
+      "Bash(pdftotext \"ПЗ.pdf\" -)",
+      "Bash(npm run *)"
     ]
   }
 }
