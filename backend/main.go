@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"tickets/db"
 	"tickets/handlers"
+	"tickets/repository"
 )
 
 func corsMiddleware() gin.HandlerFunc {
@@ -30,12 +31,21 @@ func main() {
 	}
 	defer database.Close()
 
+	userRepo := repository.NewUserRepository(database)
+	authHandler := handlers.NewAuthHandler(userRepo)
+
 	r := gin.Default()
 	r.Use(corsMiddleware())
 
 	api := r.Group("/api")
 	{
 		api.GET("/health", handlers.Health(database))
+
+		auth := api.Group("/auth")
+		{
+			auth.POST("/register", authHandler.Register)
+			auth.POST("/login", authHandler.Login)
+		}
 	}
 
 	port := os.Getenv("PORT")
