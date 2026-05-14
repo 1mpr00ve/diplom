@@ -1,3 +1,5 @@
+SET NAMES utf8mb4;
+
 -- Площадка
 INSERT INTO venues (name, address) VALUES
 ('Концертный зал "Уфа"', 'г. Уфа, ул. Ленина, 1');

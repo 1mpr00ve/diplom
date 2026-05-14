@@ -32,7 +32,10 @@ func main() {
 	defer database.Close()
 
 	userRepo := repository.NewUserRepository(database)
+	eventRepo := repository.NewEventRepository(database)
+
 	authHandler := handlers.NewAuthHandler(userRepo)
+	eventHandler := handlers.NewEventHandler(eventRepo)
 
 	r := gin.Default()
 	r.Use(corsMiddleware())
@@ -45,6 +48,12 @@ func main() {
 		{
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
+		}
+
+		events := api.Group("/events")
+		{
+			events.GET("", eventHandler.GetAll)
+			events.GET("/:id", eventHandler.GetByID)
 		}
 	}
 

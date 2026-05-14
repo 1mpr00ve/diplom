@@ -29,14 +29,14 @@
 - [x] `GET /api/health` — возвращает статус сервера и БД
 - [x] Gin + CORS middleware в `main.go`
 
-### Шаг 4 — Backend: авторизация
-- [ ] `POST /api/auth/register`
-- [ ] `POST /api/auth/login`
-- [ ] JWT middleware
+### Шаг 4 — Backend: авторизация ✅
+- [x] `POST /api/auth/register`
+- [x] `POST /api/auth/login`
+- [x] JWT middleware — `middleware/auth.go`
 
-### Шаг 5 — Backend: мероприятия и места
-- [ ] `GET /api/events` — список событий
-- [ ] `GET /api/events/:id` — детали события + схема зала со статусами мест
+### Шаг 5 — Backend: мероприятия и места ✅
+- [x] `GET /api/events` — список событий
+- [x] `GET /api/events/:id` — детали события + 60 мест с координатами и статусами
 
 ### Шаг 6 — Backend: заказы
 - [ ] `POST /api/orders` — создать заказ (транзакция + блокировка мест)
@@ -74,4 +74,4 @@
 ---
 
 ## Текущий шаг
-**Шаг 4** — Backend: авторизация
+**Шаг 7** — Frontend: основа
