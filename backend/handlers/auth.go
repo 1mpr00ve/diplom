@@ -24,10 +24,16 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		Email    string `json:"email"    binding:"required,email"`
 		Password string `json:"password" binding:"required,min=6"`
 		Name     string `json:"name"     binding:"required"`
+		Role     string `json:"role"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	role := body.Role
+	if role != "organizer" {
+		role = "buyer"
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
@@ -36,13 +42,13 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	user, err := h.users.Create(body.Email, string(hash), body.Name)
+	user, err := h.users.Create(body.Email, string(hash), body.Name, role)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "email уже занят"})
 		return
 	}
 
-	token, err := generateToken(user.ID)
+	token, err := generateToken(user.ID, user.Role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "ошибка сервера"})
 		return
@@ -72,7 +78,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := generateToken(user.ID)
+	token, err := generateToken(user.ID, user.Role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "ошибка сервера"})
 		return
@@ -81,9 +87,10 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token, "user": user})
 }
 
-func generateToken(userID int) (string, error) {
+func generateToken(userID int, role string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
+		"role":    role,
 		"exp":     time.Now().Add(24 * time.Hour).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

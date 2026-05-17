@@ -2,6 +2,8 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
+	"time"
 	"tickets/models"
 )
 
@@ -88,4 +90,116 @@ func (r *EventRepository) GetByID(id int) (*models.EventDetail, error) {
 	}
 
 	return &detail, nil
+}
+
+func (r *EventRepository) GetByOrganizer(organizerID int) ([]models.Event, error) {
+	rows, err := r.db.Query(`
+		SELECT e.id, e.title, e.description, e.event_date, COALESCE(e.poster_url, ''),
+		       v.id, v.name, v.address
+		FROM events e
+		JOIN venues v ON e.venue_id = v.id
+		WHERE e.organizer_id = ?
+		ORDER BY e.event_date
+	`, organizerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var events []models.Event
+	for rows.Next() {
+		var e models.Event
+		rows.Scan(
+			&e.ID, &e.Title, &e.Description, &e.EventDate, &e.PosterURL,
+			&e.Venue.ID, &e.Venue.Name, &e.Venue.Address,
+		)
+		events = append(events, e)
+	}
+	return events, nil
+}
+
+func (r *EventRepository) Create(req *models.CreateEventRequest, organizerID int) (*models.Event, error) {
+	var eventDate time.Time
+	var err error
+	for _, layout := range []string{time.RFC3339, "2006-01-02T15:04:05Z", "2006-01-02T15:04", "2006-01-02 15:04:05"} {
+		eventDate, err = time.Parse(layout, req.EventDate)
+		if err == nil {
+			break
+		}
+	}
+	if err != nil {
+		return nil, errors.New("неверный формат даты")
+	}
+
+	tx, err := r.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	result, err := tx.Exec(`
+		INSERT INTO events (venue_id, organizer_id, title, description, event_date, poster_url)
+		VALUES (?, ?, ?, ?, ?, ?)
+	`, req.VenueID, organizerID, req.Title, req.Description, eventDate, req.PosterURL)
+	if err != nil {
+		return nil, err
+	}
+	eventID, _ := result.LastInsertId()
+
+	_, err = tx.Exec(`
+		INSERT INTO event_seats (event_id, seat_id, price, status)
+		SELECT ?, s.id,
+		    CASE s.type WHEN 'vip' THEN ? ELSE ? END,
+		    'available'
+		FROM seats s WHERE s.venue_id = ?
+	`, eventID, req.PriceVIP, req.PriceStandard, req.VenueID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	var e models.Event
+	r.db.QueryRow(`
+		SELECT e.id, e.title, e.description, e.event_date, COALESCE(e.poster_url, ''),
+		       v.id, v.name, v.address
+		FROM events e JOIN venues v ON e.venue_id = v.id
+		WHERE e.id = ?
+	`, eventID).Scan(
+		&e.ID, &e.Title, &e.Description, &e.EventDate, &e.PosterURL,
+		&e.Venue.ID, &e.Venue.Name, &e.Venue.Address,
+	)
+	return &e, nil
+}
+
+func (r *EventRepository) Delete(eventID, organizerID int) error {
+	result, err := r.db.Exec(
+		"DELETE FROM events WHERE id = ? AND organizer_id = ?",
+		eventID, organizerID,
+	)
+	if err != nil {
+		return err
+	}
+	n, _ := result.RowsAffected()
+	if n == 0 {
+		return errors.New("событие не найдено или нет доступа")
+	}
+	return nil
+}
+
+func (r *EventRepository) GetVenues() ([]models.Venue, error) {
+	rows, err := r.db.Query("SELECT id, name, address FROM venues ORDER BY id")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var venues []models.Venue
+	for rows.Next() {
+		var v models.Venue
+		rows.Scan(&v.ID, &v.Name, &v.Address)
+		venues = append(venues, v)
+	}
+	return venues, nil
 }

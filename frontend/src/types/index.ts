@@ -21,7 +21,7 @@ export interface Seat {
   y: number
   type: 'standard' | 'vip'
   price: number
-  status: 'available' | 'booked'
+  status: 'available' | 'reserved' | 'booked'
 }
 
 export interface EventDetail extends Event {
@@ -32,6 +32,7 @@ export interface User {
   id: number
   email: string
   name: string
+  role: 'buyer' | 'organizer'
 }
 
 export interface CartItem {
@@ -41,4 +42,22 @@ export interface CartItem {
   seatNumber: number
   type: 'standard' | 'vip'
   price: number
+}
+
+export interface OrderItem {
+  id: number
+  row_label: string
+  seat_number: number
+  type: string
+  price: number
+}
+
+export interface Order {
+  id: number
+  event_id: number
+  event_title: string
+  total_price: number
+  status: string
+  created_at: string
+  items?: OrderItem[]
 }

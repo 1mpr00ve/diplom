@@ -39,6 +39,7 @@ func main() {
 	authHandler := handlers.NewAuthHandler(userRepo)
 	eventHandler := handlers.NewEventHandler(eventRepo)
 	orderHandler := handlers.NewOrderHandler(orderRepo)
+	userHandler := handlers.NewUserHandler(userRepo, orderRepo)
 
 	r := gin.Default()
 	r.Use(corsMiddleware())
@@ -46,6 +47,7 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.GET("/health", handlers.Health(database))
+		api.GET("/venues", eventHandler.GetVenues)
 
 		auth := api.Group("/auth")
 		{
@@ -59,18 +61,30 @@ func main() {
 			events.GET("/:id", eventHandler.GetByID)
 		}
 
-		orders := api.Group("/orders")
-		orders.Use(middleware.Auth())
+		// Защищённые маршруты
+		protected := api.Group("")
+		protected.Use(middleware.Auth())
 		{
-			orders.POST("/reserve", orderHandler.Reserve)
-			orders.POST("/:id/pay", orderHandler.Pay)
-			orders.GET("/:id", orderHandler.GetByID)
-		}
+			// Общие
+			protected.GET("/me", userHandler.GetMe)
+			protected.GET("/me/orders", userHandler.GetMyOrders)
 
-		me := api.Group("/me")
-		me.Use(middleware.Auth())
-		{
-			me.GET("/orders", orderHandler.GetUserOrders)
+			// Заказы
+			orders := protected.Group("/orders")
+			{
+				orders.POST("/reserve", orderHandler.Reserve)
+				orders.POST("/:id/pay", orderHandler.Pay)
+				orders.GET("/:id", orderHandler.GetByID)
+			}
+
+			// Только для организаторов
+			org := protected.Group("")
+			org.Use(middleware.RequireRole("organizer"))
+			{
+				org.GET("/me/events", eventHandler.GetMyEvents)
+				org.POST("/events", eventHandler.Create)
+				org.DELETE("/events/:id", eventHandler.Delete)
+			}
 		}
 	}
 

@@ -37,6 +37,9 @@ func Auth() gin.HandlerFunc {
 		}
 
 		c.Set("user_id", int(claims["user_id"].(float64)))
+		if role, ok := claims["role"].(string); ok {
+			c.Set("user_role", role)
+		}
 		c.Next()
 	}
 }

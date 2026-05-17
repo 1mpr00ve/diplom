@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     email       VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     name        VARCHAR(255) NOT NULL,
+    role        ENUM('buyer', 'organizer') DEFAULT 'buyer',
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -27,14 +28,16 @@ CREATE TABLE IF NOT EXISTS seats (
 );
 
 CREATE TABLE IF NOT EXISTS events (
-    id          INT AUTO_INCREMENT PRIMARY KEY,
-    venue_id    INT NOT NULL,
-    title       VARCHAR(255) NOT NULL,
-    description TEXT,
-    event_date  DATETIME NOT NULL,
-    poster_url  VARCHAR(500),
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (venue_id) REFERENCES venues(id)
+    id             INT AUTO_INCREMENT PRIMARY KEY,
+    venue_id       INT NOT NULL,
+    organizer_id   INT NULL,
+    title          VARCHAR(255) NOT NULL,
+    description    TEXT,
+    event_date     DATETIME NOT NULL,
+    poster_url     VARCHAR(500),
+    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (venue_id) REFERENCES venues(id),
+    FOREIGN KEY (organizer_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS event_seats (

@@ -9,7 +9,7 @@ import Header from '../components/Header'
 
 export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
-  const [form, setForm] = useState({ email: '', password: '', name: '' })
+  const [form, setForm] = useState({ email: '', password: '', name: '', role: 'buyer' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const dispatch = useDispatch()
@@ -116,6 +116,28 @@ export default function LoginPage() {
                 className="w-full px-4 py-3 border border-border rounded-lg text-sm text-foreground bg-[var(--input-background)] placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-colors"
               />
             </div>
+            {mode === 'register' && (
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Я хочу</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {(['buyer', 'organizer'] as const).map(r => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, role: r }))}
+                      className={clsx(
+                        'py-3 text-sm font-medium rounded-lg border transition-all',
+                        form.role === r
+                          ? 'bg-teal-500/10 border-teal-500 text-teal-600 dark:text-teal-400'
+                          : 'border-border text-muted-foreground hover:border-teal-500/50'
+                      )}
+                    >
+                      {r === 'buyer' ? 'Покупать билеты' : 'Продавать билеты'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Пароль</label>
               <input

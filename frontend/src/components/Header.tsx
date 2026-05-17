@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Ticket, Sun, Moon, User, ShoppingCart } from 'lucide-react'
+import { Ticket, Sun, Moon, User, ShoppingCart, LayoutDashboard, LogOut } from 'lucide-react'
 import type { RootState } from '../store'
 import { logout } from '../store/authSlice'
 import { useTheme } from '../contexts/ThemeContext'
@@ -29,6 +29,12 @@ export default function Header() {
           <Link to="/" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
             Мероприятия
           </Link>
+          {user?.role === 'organizer' && (
+            <Link to="/dashboard" className="text-sm font-medium text-teal-400 hover:text-teal-300 transition-colors flex items-center gap-1">
+              <LayoutDashboard className="w-4 h-4" />
+              Мои события
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -41,10 +47,7 @@ export default function Header() {
           </button>
 
           {cartCount > 0 && (
-            <Link
-              to="/checkout"
-              className="relative p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-            >
+            <Link to="/checkout" className="relative p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
               <ShoppingCart className="w-4 h-4" />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-teal-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 {cartCount}
@@ -53,13 +56,20 @@ export default function Header() {
           )}
 
           {token ? (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-400 hidden sm:block">{user?.name}</span>
+            <div className="flex items-center gap-1">
+              <Link
+                to="/profile"
+                className="flex items-center gap-2 text-sm text-slate-300 hover:text-white px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <User className="w-4 h-4" />
+                <span className="hidden sm:block">{user?.name}</span>
+              </Link>
               <button
                 onClick={handleLogout}
-                className="text-sm font-medium text-slate-300 hover:text-white px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+                className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
+                title="Выйти"
               >
-                Выйти
+                <LogOut className="w-4 h-4" />
               </button>
             </div>
           ) : (

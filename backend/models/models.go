@@ -7,6 +7,7 @@ type User struct {
 	Email        string    `json:"email"`
 	PasswordHash string    `json:"-"`
 	Name         string    `json:"name"`
+	Role         string    `json:"role"`
 	CreatedAt    time.Time `json:"created_at"`
 }
 
@@ -23,6 +24,7 @@ type Event struct {
 	EventDate   time.Time `json:"event_date"`
 	PosterURL   string    `json:"poster_url"`
 	Venue       Venue     `json:"venue"`
+	OrganizerID *int      `json:"organizer_id,omitempty"`
 }
 
 type SeatWithStatus struct {
@@ -41,19 +43,30 @@ type EventDetail struct {
 	Seats []SeatWithStatus `json:"seats"`
 }
 
+type CreateEventRequest struct {
+	Title         string  `json:"title"          binding:"required"`
+	Description   string  `json:"description"`
+	EventDate     string  `json:"event_date"     binding:"required"`
+	VenueID       int     `json:"venue_id"       binding:"required"`
+	PosterURL     string  `json:"poster_url"`
+	PriceStandard float64 `json:"price_standard" binding:"required,gt=0"`
+	PriceVIP      float64 `json:"price_vip"      binding:"required,gt=0"`
+}
+
 type OrderItem struct {
-	ID         int     `json:"id"`
-	EventSeatID int    `json:"event_seat_id"`
-	RowLabel   string  `json:"row_label"`
-	SeatNumber int     `json:"seat_number"`
-	SeatType   string  `json:"type"`
-	Price      float64 `json:"price"`
+	ID          int     `json:"id"`
+	EventSeatID int     `json:"event_seat_id"`
+	RowLabel    string  `json:"row_label"`
+	SeatNumber  int     `json:"seat_number"`
+	SeatType    string  `json:"type"`
+	Price       float64 `json:"price"`
 }
 
 type Order struct {
 	ID          int         `json:"id"`
 	UserID      int         `json:"user_id"`
 	EventID     int         `json:"event_id"`
+	EventTitle  string      `json:"event_title,omitempty"`
 	TotalPrice  float64     `json:"total_price"`
 	Status      string      `json:"status"`
 	CreatedAt   time.Time   `json:"created_at"`

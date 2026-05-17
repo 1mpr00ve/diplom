@@ -49,3 +49,61 @@ func (h *EventHandler) GetByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, event)
 }
+
+func (h *EventHandler) GetMyEvents(c *gin.Context) {
+	organizerID := c.GetInt("user_id")
+	events, err := h.events.GetByOrganizer(organizerID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ошибка сервера"})
+		return
+	}
+	if events == nil {
+		events = []models.Event{}
+	}
+	c.JSON(http.StatusOK, events)
+}
+
+func (h *EventHandler) Create(c *gin.Context) {
+	organizerID := c.GetInt("user_id")
+	var req models.CreateEventRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	event, err := h.events.Create(&req, organizerID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, event)
+}
+
+func (h *EventHandler) Delete(c *gin.Context) {
+	organizerID := c.GetInt("user_id")
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "некорректный id"})
+		return
+	}
+
+	if err := h.events.Delete(id, organizerID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "удалено"})
+}
+
+func (h *EventHandler) GetVenues(c *gin.Context) {
+	venues, err := h.events.GetVenues()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ошибка сервера"})
+		return
+	}
+	if venues == nil {
+		venues = []models.Venue{}
+	}
+	c.JSON(http.StatusOK, venues)
+}

@@ -186,9 +186,12 @@ func (r *OrderRepository) GetByID(orderID, userID int) (*models.Order, error) {
 
 func (r *OrderRepository) GetUserOrders(userID int) ([]models.Order, error) {
 	rows, err := r.db.Query(`
-		SELECT id, user_id, event_id, total_price, status, created_at
-		FROM orders WHERE user_id=?
-		ORDER BY created_at DESC
+		SELECT o.id, o.user_id, o.event_id, o.total_price, o.status, o.created_at,
+		       e.title
+		FROM orders o
+		JOIN events e ON e.id = o.event_id
+		WHERE o.user_id=?
+		ORDER BY o.created_at DESC
 	`, userID)
 	if err != nil {
 		return nil, err
@@ -198,7 +201,7 @@ func (r *OrderRepository) GetUserOrders(userID int) ([]models.Order, error) {
 	var orders []models.Order
 	for rows.Next() {
 		var o models.Order
-		rows.Scan(&o.ID, &o.UserID, &o.EventID, &o.TotalPrice, &o.Status, &o.CreatedAt)
+		rows.Scan(&o.ID, &o.UserID, &o.EventID, &o.TotalPrice, &o.Status, &o.CreatedAt, &o.EventTitle)
 		orders = append(orders, o)
 	}
 	return orders, nil
