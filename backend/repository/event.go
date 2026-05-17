@@ -60,7 +60,11 @@ func (r *EventRepository) GetByID(id int) (*models.EventDetail, error) {
 
 	rows, err := r.db.Query(`
 		SELECT s.id, s.row_label, s.seat_number, s.x, s.y, s.type,
-		       es.price, es.status
+		       es.price,
+		       CASE
+		           WHEN es.status = 'reserved' AND (es.reserved_until IS NULL OR es.reserved_until < NOW()) THEN 'available'
+		           ELSE es.status
+		       END as status
 		FROM seats s
 		JOIN event_seats es ON es.seat_id = s.id
 		WHERE es.event_id = ?

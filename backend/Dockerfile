@@ -1,11 +1,12 @@
-FROM golang:1.22-alpine
+FROM golang:1.25-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache git ca-certificates
+COPY go.mod go.sum ./
+RUN go mod download
 
 COPY . .
-RUN go mod tidy && go build -o main .
+RUN go build -o main .
 
 EXPOSE 8080
 

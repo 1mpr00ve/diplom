@@ -3,7 +3,10 @@
     "allow": [
       "Bash(python -c ' *)",
       "Bash(pdftotext \"ПЗ.pdf\" -)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(go mod *)",
+      "Bash(go build *)",
+      "Bash(go get *)"
     ]
   }
 }

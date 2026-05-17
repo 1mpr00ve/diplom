@@ -38,29 +38,35 @@ CREATE TABLE IF NOT EXISTS events (
 );
 
 CREATE TABLE IF NOT EXISTS event_seats (
-    id          INT AUTO_INCREMENT PRIMARY KEY,
-    event_id    INT NOT NULL,
-    seat_id     INT NOT NULL,
-    price       DECIMAL(10,2) NOT NULL,
-    status      ENUM('available', 'booked') DEFAULT 'available',
+    id             INT AUTO_INCREMENT PRIMARY KEY,
+    event_id       INT NOT NULL,
+    seat_id        INT NOT NULL,
+    price          DECIMAL(10,2) NOT NULL,
+    status         ENUM('available', 'reserved', 'booked') DEFAULT 'available',
+    reserved_until DATETIME NULL,
+    reserved_by    INT NULL,
     FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
     FOREIGN KEY (seat_id) REFERENCES seats(id) ON DELETE CASCADE,
+    FOREIGN KEY (reserved_by) REFERENCES users(id) ON DELETE SET NULL,
     UNIQUE KEY uq_event_seat (event_id, seat_id)
 );
 
 CREATE TABLE IF NOT EXISTS orders (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     user_id     INT NOT NULL,
+    event_id    INT NOT NULL,
     total_price DECIMAL(10,2) NOT NULL,
     status      ENUM('pending', 'paid', 'cancelled') DEFAULT 'pending',
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (event_id) REFERENCES events(id)
 );
 
 CREATE TABLE IF NOT EXISTS order_items (
     id            INT AUTO_INCREMENT PRIMARY KEY,
     order_id      INT NOT NULL,
     event_seat_id INT NOT NULL,
+    price         DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     FOREIGN KEY (event_seat_id) REFERENCES event_seats(id)
 );

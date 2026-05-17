@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"tickets/db"
 	"tickets/handlers"
+	"tickets/middleware"
 	"tickets/repository"
 )
 
@@ -33,9 +34,11 @@ func main() {
 
 	userRepo := repository.NewUserRepository(database)
 	eventRepo := repository.NewEventRepository(database)
+	orderRepo := repository.NewOrderRepository(database)
 
 	authHandler := handlers.NewAuthHandler(userRepo)
 	eventHandler := handlers.NewEventHandler(eventRepo)
+	orderHandler := handlers.NewOrderHandler(orderRepo)
 
 	r := gin.Default()
 	r.Use(corsMiddleware())
@@ -54,6 +57,20 @@ func main() {
 		{
 			events.GET("", eventHandler.GetAll)
 			events.GET("/:id", eventHandler.GetByID)
+		}
+
+		orders := api.Group("/orders")
+		orders.Use(middleware.Auth())
+		{
+			orders.POST("/reserve", orderHandler.Reserve)
+			orders.POST("/:id/pay", orderHandler.Pay)
+			orders.GET("/:id", orderHandler.GetByID)
+		}
+
+		me := api.Group("/me")
+		me.Use(middleware.Auth())
+		{
+			me.GET("/orders", orderHandler.GetUserOrders)
 		}
 	}
 

@@ -3,7 +3,9 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -22,9 +24,13 @@ func Connect() (*sql.DB, error) {
 		return nil, err
 	}
 
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("не удалось подключиться к БД: %w", err)
+	for i := 1; i <= 15; i++ {
+		if err = db.Ping(); err == nil {
+			return db, nil
+		}
+		log.Printf("БД не готова, попытка %d/15: %v", i, err)
+		time.Sleep(2 * time.Second)
 	}
 
-	return db, nil
+	return nil, fmt.Errorf("не удалось подключиться к БД после 15 попыток: %w", err)
 }
