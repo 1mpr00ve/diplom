@@ -6,7 +6,13 @@
       "Bash(npm run *)",
       "Bash(go mod *)",
       "Bash(go build *)",
-      "Bash(go get *)"
+      "Bash(go get *)",
+      "Bash(python3 -c \"import pdfplumber; pdf = pdfplumber.open\\('c:/Users/asdge/Desktop/diplom/zapiska/ПЗ.pdf'\\); print\\(f'Страниц: {len\\(pdf.pages\\)}'\\); print\\(pdf.pages[0].extract_text\\(\\)[:3000]\\)\")",
+      "Bash(python -c \"import PyPDF2; r = PyPDF2.PdfReader\\('c:/Users/asdge/Desktop/diplom/zapiska/ПЗ.pdf'\\); print\\(len\\(r.pages\\)\\); print\\(r.pages[0].extract_text\\(\\)[:2000]\\)\")",
+      "Bash(pip install *)",
+      "Bash(python -c \"import fitz; doc = fitz.open\\('c:/Users/asdge/Desktop/diplom/zapiska/ПЗ.pdf'\\); print\\(f'Страниц: {len\\(doc\\)}'\\); print\\(doc[0].get_text\\(\\)[:3000]\\)\")",
+      "Bash(python -c \"import fitz; doc = fitz.open\\('c:/Users/asdge/Desktop/diplom/zapiska/ПЗ.pdf'\\); print\\(f'Страниц: {len\\(doc\\)}'\\); [print\\(f'--- СТРАНИЦА {i+1} ---\\\\n' + doc[i].get_text\\(\\)\\) for i in range\\(min\\(5, len\\(doc\\)\\)\\)]\")",
+      "Bash(pip list *)"
     ]
   }
 }

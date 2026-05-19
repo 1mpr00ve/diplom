@@ -1,5 +1,4 @@
 zapiska/
-.env.example
 
 # секреты
 .env
