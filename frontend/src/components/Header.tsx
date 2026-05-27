@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Ticket, Sun, Moon, User, ShoppingCart, LayoutDashboard, LogOut } from 'lucide-react'
+import { Ticket, Sun, Moon, User, ShoppingCart, LayoutDashboard, ShieldCheck, LogOut } from 'lucide-react'
 import type { RootState } from '../store'
 import { logout } from '../store/authSlice'
 import { useTheme } from '../contexts/ThemeContext'
@@ -33,6 +33,12 @@ export default function Header() {
             <Link to="/dashboard" className="text-sm font-medium text-teal-400 hover:text-teal-300 transition-colors flex items-center gap-1">
               <LayoutDashboard className="w-4 h-4" />
               Мои события
+            </Link>
+          )}
+          {user?.role === 'admin' && (
+            <Link to="/admin" className="text-sm font-medium text-teal-400 hover:text-teal-300 transition-colors flex items-center gap-1">
+              <ShieldCheck className="w-4 h-4" />
+              Администрирование
             </Link>
           )}
         </nav>

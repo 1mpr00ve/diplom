@@ -13,8 +13,6 @@ interface FormState {
   event_date: string
   venue_id: string
   poster_url: string
-  standard_price: string
-  vip_price: string
 }
 
 export default function CreateEventPage() {
@@ -27,25 +25,56 @@ export default function CreateEventPage() {
     event_date: '',
     venue_id: '',
     poster_url: '',
-    standard_price: '',
-    vip_price: '',
   })
+  const [seatTypes, setSeatTypes] = useState<string[]>([])
+  const [prices, setPrices] = useState<Record<string, string>>({})
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     api.get('/api/venues').then(r => {
-      setVenues(r.data ?? [])
-      if (r.data?.length) setForm(f => ({ ...f, venue_id: String(r.data[0].id) }))
+      const data: Venue[] = r.data ?? []
+      setVenues(data)
+      if (data.length) {
+        const firstId = String(data[0].id)
+        setForm(f => ({ ...f, venue_id: firstId }))
+        loadSeatTypes(data[0].id)
+      }
     })
   }, [])
 
-  const set = (field: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm(f => ({ ...f, [field]: e.target.value }))
+  const loadSeatTypes = (venueId: number) => {
+    api.get(`/api/venues/${venueId}/seat-types`).then(r => {
+      const types: string[] = r.data ?? []
+      setSeatTypes(types)
+      setPrices(Object.fromEntries(types.map(t => [t, ''])))
+    })
+  }
+
+  const handleVenueChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = e.target.value
+    setForm(f => ({ ...f, venue_id: id }))
+    if (id) loadSeatTypes(parseInt(id))
+  }
+
+  const set = (field: keyof FormState) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+      setForm(f => ({ ...f, [field]: e.target.value }))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    const pricesMap: Record<string, number> = {}
+    for (const t of seatTypes) {
+      const val = parseFloat(prices[t])
+      if (!val || val <= 0) {
+        setError(`Укажите корректную цену для типа "${t}"`)
+        return
+      }
+      pricesMap[t] = val
+    }
+
     setLoading(true)
     try {
       const payload = {
@@ -54,8 +83,7 @@ export default function CreateEventPage() {
         event_date: new Date(form.event_date).toISOString(),
         venue_id: parseInt(form.venue_id),
         poster_url: form.poster_url.trim() || '',
-        price_standard: parseFloat(form.standard_price),
-        price_vip: parseFloat(form.vip_price),
+        prices: pricesMap,
       }
       const { data } = await api.post('/api/events', payload)
       navigate(`/events/${data.id}`)
@@ -111,7 +139,7 @@ export default function CreateEventPage() {
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Площадка</label>
-              <select value={form.venue_id} onChange={set('venue_id')} required className={inputClass}>
+              <select value={form.venue_id} onChange={handleVenueChange} required className={inputClass}>
                 {venues.map(v => (
                   <option key={v.id} value={v.id}>{v.name} — {v.address}</option>
                 ))}
@@ -131,42 +159,32 @@ export default function CreateEventPage() {
             </div>
           </div>
 
-          <div className="bg-card border border-border rounded-xl p-6 space-y-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Цены на билеты</h2>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Стандарт (₽)</label>
-                <input
-                  type="number"
-                  placeholder="500"
-                  min="0"
-                  step="0.01"
-                  value={form.standard_price}
-                  onChange={set('standard_price')}
-                  required
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">VIP (₽)</label>
-                <input
-                  type="number"
-                  placeholder="1500"
-                  min="0"
-                  step="0.01"
-                  value={form.vip_price}
-                  onChange={set('vip_price')}
-                  required
-                  className={inputClass}
-                />
+          {seatTypes.length > 0 && (
+            <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Цены на билеты</h2>
+              <div className="grid grid-cols-2 gap-4">
+                {seatTypes.map(t => (
+                  <div key={t}>
+                    <label className="block text-sm font-medium text-foreground mb-1.5 capitalize">{t} (₽)</label>
+                    <input
+                      type="number"
+                      placeholder="500"
+                      min="1"
+                      step="0.01"
+                      value={prices[t] ?? ''}
+                      onChange={e => setPrices(p => ({ ...p, [t]: e.target.value }))}
+                      required
+                      className={inputClass}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
+          )}
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || seatTypes.length === 0}
             className="w-full py-3.5 bg-teal-500 hover:bg-teal-400 disabled:opacity-60 text-white text-sm font-bold rounded-lg transition-all shadow-[0_4px_14px_rgba(20,184,166,0.3)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)]"
           >
             {loading ? 'Создание...' : 'Создать мероприятие'}

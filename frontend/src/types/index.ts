@@ -19,7 +19,7 @@ export interface Seat {
   seat_number: number
   x: number
   y: number
-  type: 'standard' | 'vip'
+  type: string
   price: number
   status: 'available' | 'reserved' | 'booked'
 }
@@ -32,7 +32,7 @@ export interface User {
   id: number
   email: string
   name: string
-  role: 'buyer' | 'organizer'
+  role: 'buyer' | 'organizer' | 'admin'
 }
 
 export interface CartItem {

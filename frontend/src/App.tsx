@@ -7,6 +7,7 @@ import OrderSuccessPage from './pages/OrderSuccessPage'
 import ProfilePage from './pages/ProfilePage'
 import OrganizerDashboard from './pages/OrganizerDashboard'
 import CreateEventPage from './pages/CreateEventPage'
+import AdminDashboard from './pages/AdminDashboard'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
       <Route path="/orders/:id" element={<OrderSuccessPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/dashboard" element={<OrganizerDashboard />} />
+      <Route path="/admin" element={<AdminDashboard />} />
     </Routes>
   )
 }

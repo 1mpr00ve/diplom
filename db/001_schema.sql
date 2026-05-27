@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     email       VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     name        VARCHAR(255) NOT NULL,
-    role        ENUM('buyer', 'organizer') DEFAULT 'buyer',
+    role        ENUM('buyer', 'organizer', 'admin') DEFAULT 'buyer',
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS seats (
     seat_number INT NOT NULL,
     x           FLOAT NOT NULL,
     y           FLOAT NOT NULL,
-    type        ENUM('standard', 'vip') DEFAULT 'standard',
+    type        VARCHAR(50) NOT NULL DEFAULT 'standard',
     FOREIGN KEY (venue_id) REFERENCES venues(id) ON DELETE CASCADE
 );
 

@@ -107,3 +107,47 @@ func (h *EventHandler) GetVenues(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, venues)
 }
+
+func (h *EventHandler) GetSeatTypes(c *gin.Context) {
+	venueID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "некорректный id"})
+		return
+	}
+	types, err := h.events.GetSeatTypes(venueID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ошибка сервера"})
+		return
+	}
+	if types == nil {
+		types = []string{}
+	}
+	c.JSON(http.StatusOK, types)
+}
+
+func (h *EventHandler) CreateVenue(c *gin.Context) {
+	var req models.CreateVenueRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	venue, err := h.events.CreateVenue(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, venue)
+}
+
+func (h *EventHandler) DeleteVenue(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "некорректный id"})
+		return
+	}
+	if err := h.events.DeleteVenue(id); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "удалено"})
+}

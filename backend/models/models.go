@@ -44,13 +44,24 @@ type EventDetail struct {
 }
 
 type CreateEventRequest struct {
-	Title         string  `json:"title"          binding:"required"`
-	Description   string  `json:"description"`
-	EventDate     string  `json:"event_date"     binding:"required"`
-	VenueID       int     `json:"venue_id"       binding:"required"`
-	PosterURL     string  `json:"poster_url"`
-	PriceStandard float64 `json:"price_standard" binding:"required,gt=0"`
-	PriceVIP      float64 `json:"price_vip"      binding:"required,gt=0"`
+	Title       string             `json:"title"       binding:"required"`
+	Description string             `json:"description"`
+	EventDate   string             `json:"event_date"  binding:"required"`
+	VenueID     int                `json:"venue_id"    binding:"required"`
+	PosterURL   string             `json:"poster_url"`
+	Prices      map[string]float64 `json:"prices"      binding:"required"`
+}
+
+type VenueRow struct {
+	Label    string `json:"label"     binding:"required"`
+	SeatType string `json:"seat_type" binding:"required"`
+}
+
+type CreateVenueRequest struct {
+	Name        string     `json:"name"         binding:"required"`
+	Address     string     `json:"address"      binding:"required"`
+	SeatsPerRow int        `json:"seats_per_row" binding:"required,min=1,max=100"`
+	Rows        []VenueRow `json:"rows"         binding:"required,min=1"`
 }
 
 type OrderItem struct {

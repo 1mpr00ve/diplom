@@ -1,5 +1,9 @@
 SET NAMES utf8mb4;
 
+-- Администратор (пароль: admin123)
+INSERT INTO users (email, password_hash, name, role) VALUES
+('admin@ticketshop.ru', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Администратор', 'admin');
+
 -- Площадка
 INSERT INTO venues (name, address) VALUES
 ('Концертный зал "Уфа"', 'г. Уфа, ул. Ленина, 1');

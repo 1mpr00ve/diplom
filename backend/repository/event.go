@@ -146,15 +146,15 @@ func (r *EventRepository) Create(req *models.CreateEventRequest, organizerID int
 	}
 	eventID, _ := result.LastInsertId()
 
-	_, err = tx.Exec(`
-		INSERT INTO event_seats (event_id, seat_id, price, status)
-		SELECT ?, s.id,
-		    CASE s.type WHEN 'vip' THEN ? ELSE ? END,
-		    'available'
-		FROM seats s WHERE s.venue_id = ?
-	`, eventID, req.PriceVIP, req.PriceStandard, req.VenueID)
-	if err != nil {
-		return nil, err
+	for seatType, price := range req.Prices {
+		_, err = tx.Exec(`
+			INSERT INTO event_seats (event_id, seat_id, price, status)
+			SELECT ?, s.id, ?, 'available'
+			FROM seats s WHERE s.venue_id = ? AND s.type = ?
+		`, eventID, price, req.VenueID, seatType)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -202,4 +202,67 @@ func (r *EventRepository) GetVenues() ([]models.Venue, error) {
 		venues = append(venues, v)
 	}
 	return venues, nil
+}
+
+func (r *EventRepository) GetSeatTypes(venueID int) ([]string, error) {
+	rows, err := r.db.Query(
+		"SELECT DISTINCT type FROM seats WHERE venue_id = ? ORDER BY type",
+		venueID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var types []string
+	for rows.Next() {
+		var t string
+		rows.Scan(&t)
+		types = append(types, t)
+	}
+	return types, nil
+}
+
+func (r *EventRepository) CreateVenue(req *models.CreateVenueRequest) (*models.Venue, error) {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	result, err := tx.Exec("INSERT INTO venues (name, address) VALUES (?, ?)", req.Name, req.Address)
+	if err != nil {
+		return nil, err
+	}
+	venueID, _ := result.LastInsertId()
+
+	for rowIdx, row := range req.Rows {
+		y := 80 + rowIdx*60
+		for seatNum := 1; seatNum <= req.SeatsPerRow; seatNum++ {
+			x := 100 + (seatNum-1)*55
+			_, err = tx.Exec(
+				"INSERT INTO seats (venue_id, row_label, seat_number, x, y, type) VALUES (?, ?, ?, ?, ?, ?)",
+				venueID, row.Label, seatNum, x, y, row.SeatType,
+			)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+	return &models.Venue{ID: int(venueID), Name: req.Name, Address: req.Address}, nil
+}
+
+func (r *EventRepository) DeleteVenue(id int) error {
+	result, err := r.db.Exec("DELETE FROM venues WHERE id = ?", id)
+	if err != nil {
+		return err
+	}
+	n, _ := result.RowsAffected()
+	if n == 0 {
+		return errors.New("площадка не найдена")
+	}
+	return nil
 }

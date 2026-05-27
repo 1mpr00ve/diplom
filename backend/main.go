@@ -48,6 +48,7 @@ func main() {
 	{
 		api.GET("/health", handlers.Health(database))
 		api.GET("/venues", eventHandler.GetVenues)
+		api.GET("/venues/:id/seat-types", eventHandler.GetSeatTypes)
 
 		auth := api.Group("/auth")
 		{
@@ -84,6 +85,14 @@ func main() {
 				org.GET("/me/events", eventHandler.GetMyEvents)
 				org.POST("/events", eventHandler.Create)
 				org.DELETE("/events/:id", eventHandler.Delete)
+			}
+
+			// Только для администраторов
+			admin := protected.Group("/admin")
+			admin.Use(middleware.RequireRole("admin"))
+			{
+				admin.POST("/venues", eventHandler.CreateVenue)
+				admin.DELETE("/venues/:id", eventHandler.DeleteVenue)
 			}
 		}
 	}
