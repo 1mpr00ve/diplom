@@ -24,6 +24,13 @@ func Connect() (*sql.DB, error) {
 		return nil, err
 	}
 
+	// Настройки пула — критично для долгой работы на сервере.
+	// Без этого коннекшны протухают и БД "отваливается" через день.
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(5 * time.Minute)
+	db.SetConnMaxIdleTime(2 * time.Minute)
+
 	for i := 1; i <= 15; i++ {
 		if err = db.Ping(); err == nil {
 			return db, nil
