@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -21,6 +22,7 @@ func NewEventHandler(events *repository.EventRepository) *EventHandler {
 func (h *EventHandler) GetAll(c *gin.Context) {
 	events, err := h.events.GetAll()
 	if err != nil {
+		log.Printf("GetAll events error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "ошибка сервера"})
 		return
 	}
