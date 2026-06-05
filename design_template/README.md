@@ -9,3 +9,4 @@
 
   Run `npm run dev` to start the development server.
   
+  Тестирование гипотезы реализации протокола Телескоп+ и отчет о проделанной работе

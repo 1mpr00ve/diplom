@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { CheckCircle2, Ticket, Calendar } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 import api from '../api'
 import Header from '../components/Header'
 
@@ -61,6 +62,24 @@ export default function OrderSuccessPage() {
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Оплата прошла успешно!</h1>
           <p className="text-muted-foreground">Заказ №{order.id} подтверждён</p>
+        </div>
+
+        {/* QR-код билета */}
+        <div className="bg-card border border-border rounded-xl p-6 shadow-sm mb-6 flex flex-col items-center">
+          <h2 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
+            <Ticket className="w-4 h-4 text-teal-500" />
+            Электронный билет
+          </h2>
+          <div className="bg-white p-4 rounded-xl">
+            <QRCodeSVG
+              value={`${window.location.origin}/orders/${order.id}?token=${order.id}-${order.total_price}`}
+              size={180}
+              level="M"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mt-3 text-center">
+            Предъявите этот код на входе. Заказ №{order.id}
+          </p>
         </div>
 
         {/* Order details */}
